@@ -10,7 +10,7 @@
 #include "thing/variable.h"
 #include "thing/complextherm.h"
 
-#include "listthing.h"
+#include "thing/listthing.h"
 
 void read(std::string::iterator startS, std::string::iterator endS, listThing& listDecl)
 {

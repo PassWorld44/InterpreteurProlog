@@ -6,9 +6,8 @@
 #include <exception>
 #include <iostream>
 
-
 #include "thing.h"
-#include "../listthing.h"
+#include "listthing.h"
 
 struct predicate : public Thing, public listThing
 {
