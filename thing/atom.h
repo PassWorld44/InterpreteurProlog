@@ -11,8 +11,4 @@ struct Atom : public Thing
 	std::string str;
 };
 
-inline std::ostream& operator<<(std::ostream& output, const Atom& at)
-{
-	output << at.str;
-	return output;
-}
+std::ostream& operator<<(std::ostream& output, const Atom& at);
