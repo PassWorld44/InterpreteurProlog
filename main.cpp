@@ -10,14 +10,10 @@
 #include "thing/variable.h"
 #include "thing/complextherm.h"
 
-#include "listthing.h"
-
 void read(std::string::iterator startS, std::string::iterator endS, listThing& listDecl)
 {
 	for(auto it = startS; it != endS; it++)
 	{
-		std::cout << *it << std::endl;
-
 		if(!isalpha(*it) && *it != '_')
 		{
 			std::cout << *(it - 1) << " " << *it << " " << *(it + 1) << std::endl; 
@@ -29,27 +25,54 @@ void read(std::string::iterator startS, std::string::iterator endS, listThing& l
 		auto endParenthesis = std::find_if(endAtom, endS, 
 		[](char c) -> bool {return c == ')' || c == '.';});
 
-		int arity = std::count(endAtom, endParenthesis, ',');
-		std::string name {it, endAtom};
-		std::cout << name << std::endl;
+		int arity = 0;
+		if(*endAtom == '(' && !std::string{endAtom, endParenthesis}.empty())
+			arity = std::count(endAtom, endParenthesis, ',') + 1;
 
-		auto tuple = listDecl.insert(std::make_unique<predicate>(name, arity));
+		std::string name {it, endAtom};
+
+		std::cout << listDecl << std::endl;
+
+		std::cin.get();
+
+		std::unique_ptr<Thing> ptr {std::make_unique<predicate>(name, arity) };
+
+		std::pair<listThing::iterator, bool> pair = listDecl.insert(std::move(ptr));
 		//create or find the corresponding complex_term
 
-		predicate& pred = *static_cast<predicate*>( &(*(*tuple.first)) );
+		//std::cout << "caca:" <<pair.second << " " << listDecl.size()<<std::endl;
 
-		//---------- Read the parameters of the predicate --------
-		auto tuple2 = pred.emplace(std::make_unique<complex_term_decl>());
+		std::cout << listDecl << std::endl;
 
-		complex_term_decl& listArgs = *static_cast<complex_term_decl*>((*tuple2.first).get());
+		std::cin.get();
 
-		if(*it == '(')
+		predicate& pred = *static_cast<predicate*>(&(*(*pair.first)));
+
+		if(arity != 0)
 		{
-			it++;
-			while(it != endParenthesis)
+			//---------- Read the parameters of the predicate --------
+			std::pair<listThing::iterator, bool> pair2 = pred.emplace(std::make_unique<complex_term_decl>());
+
+			complex_term_decl& listArgs = *static_cast<complex_term_decl*>((*pair2.first).get());
+
+			it = endAtom;
+
+			if(*it == '(')
 			{
-				auto endWord = std::find_if(it, endParenthesis, [](char c) -> bool {return isalpha(c);});
-				listArgs.emplace_back(std::make_unique<Atom>(std::string{it, endWord}));
+				it++;
+				while(it != endParenthesis)
+				{
+					auto endWord = std::find_if(it, endParenthesis, [](char c) -> bool {return c == ' ' || c == ',';});
+
+					std::string strAtom {it, endWord};
+					//std::cout << strAtom << std::endl;
+
+					listArgs.emplace_back(std::make_unique<Atom>(strAtom));
+
+					std::cout << listArgs << std::endl;
+
+					it = endWord;
+				}
 			}
 		}
 
@@ -60,8 +83,9 @@ void read(std::string::iterator startS, std::string::iterator endS, listThing& l
 			it++;
 		}
 
-		std::cout << "." << listDecl << std::endl;
+		
 	}
+	std::cout << "." << listDecl << std::endl;
 }
 
 int main() 

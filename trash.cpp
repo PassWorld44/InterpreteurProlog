@@ -7,6 +7,7 @@
 
 std::ostream& operator<<(std::ostream& output, const Thing& th)
 {
+	//std::cout << th.t;
 	switch(th.t)
 	{
 	case Thing::Type::atom:
