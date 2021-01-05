@@ -3,19 +3,18 @@
 #include <fstream>
 #include <algorithm>
 #include <memory>
-#include <unordered_set>
+#include <unordered_map>
+#include <sstream>
+#include <functional>
 
 #include "thing/atom.h"
 #include "thing/number.h"
 #include "thing/variable.h"
 #include "thing/complextherm.h"
+#include "predicate.h"
+#include "listpredicate.h"
 
-<<<<<<< HEAD
-#include "thing/listthing.h"
-
-=======
->>>>>>> 2f7c4676f8cffc4a1f61dc6e78b5e93d95d8df48
-void read(std::string::iterator startS, std::string::iterator endS, listThing& listDecl)
+void read(std::string::iterator startS, std::string::iterator endS, listPredicate& listDecl)
 {
 	for(auto it = startS; it != endS; it++)
 	{
@@ -34,24 +33,22 @@ void read(std::string::iterator startS, std::string::iterator endS, listThing& l
 		if(*endAtom == '(' && !std::string{endAtom, endParenthesis}.empty())
 			arity = std::count(endAtom, endParenthesis, ',') + 1;
 
-		std::string name {it, endAtom};
+		const std::string name {it, endAtom};
 
-		std::cout << listDecl << std::endl;
+		//std::cout << listDecl << std::endl;
+		//std::cin.get();
 
-		std::cin.get();
+		std::stringstream ss;
+		ss << name << "/" << arity;
 
-		std::unique_ptr<Thing> ptr {std::make_unique<predicate>(name, arity) };
-
-		std::pair<listThing::iterator, bool> pair = listDecl.insert(std::move(ptr));
+		std::pair<listPredicate::iterator, bool> pair = listDecl.try_emplace(ss.str(),name, arity);
 		//create or find the corresponding complex_term
 
 		//std::cout << "caca:" <<pair.second << " " << listDecl.size()<<std::endl;
+		//std::cout << listDecl << std::endl;
+		//std::cin.get();
 
-		std::cout << listDecl << std::endl;
-
-		std::cin.get();
-
-		predicate& pred = *static_cast<predicate*>(&(*(*pair.first)));
+		predicate& pred = *static_cast<predicate*>(&(*pair.first).second);
 
 		if(arity != 0)
 		{
@@ -74,7 +71,7 @@ void read(std::string::iterator startS, std::string::iterator endS, listThing& l
 
 					listArgs.emplace_back(std::make_unique<Atom>(strAtom));
 
-					std::cout << listArgs << std::endl;
+					//std::cout << listArgs << std::endl;
 
 					it = endWord;
 				}
@@ -90,12 +87,29 @@ void read(std::string::iterator startS, std::string::iterator endS, listThing& l
 
 		
 	}
-	std::cout << "." << listDecl << std::endl;
+	//std::cout << "." << listDecl << std::endl;
+}
+
+void analysInput(std::string txt, const listPredicate& listPred)
+{
+    listPredicate askPred;
+
+	read(txt.begin(), txt.end(), askPred);
+	//we just have to compare the results now
+
+	for(std::pair<const std::string, predicate>& i : askPred)
+	{
+		std::find_if(listPred.begin(), listPred.end(), 
+			[&](const std::pair<const std::string, const predicate&> pair) -> bool
+		{
+			return pair.second.getFullName() == i.second.getFullName();
+		});
+	}
 }
 
 int main() 
 {
-	listThing listDeclarations;
+	listPredicate listDeclarations;
 
 	std::ifstream file{"prog.txt", std::ifstream::in};
 
@@ -110,4 +124,45 @@ int main()
 	read(fileTxt.begin(), fileTxt.end(), listDeclarations);
 
 	std::cout << fileTxt << std::endl;
+
+	std::string lastInput;
+	std::string totalinput;
+
+	bool continue {true};
+
+	while(continue && totalinput != "quit")
+	{
+		bool findPoint {false};
+		lastInput.clear();
+		totalinput.clear();
+
+		std::cout << "?- ";
+
+		while(!findPoint)
+		{
+			lastInput.clear();
+
+			std::getline(std::cin, lastInput);
+			totalinput.append(lastInput);
+
+			if(std::find(lastInput.begin(), lastInput.end(), '.') != lastInput.end())
+			{
+				findPoint = true;
+			}
+
+			if(lastInput == "quit")
+			{
+				continue = true;
+				break;
+			}
+
+			//std::cout << lastInput << std::endl;
+			//std::cout << totalinput << std::endl;
+		}
+
+		if(continue) //otherwise just quit and don't analyse le last thing entered
+			analysInput(totalinput, listDeclarations);
+
+		std::cin.clear();
+	}
 }

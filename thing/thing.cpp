@@ -18,9 +18,6 @@ std::ostream& operator<<(std::ostream& o, const Thing::Type& t)
 	case Thing::number:
 		o << "number";
 		break;
-	case Thing::predicate:
-		o << "predicate";
-		break;
 	case Thing::complex_term_decl:
 		o << "complex_term_decl";
 		break;

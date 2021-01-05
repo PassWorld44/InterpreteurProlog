@@ -4,7 +4,7 @@
 
 struct Thing
 {
-	enum Type {atom, variable, number, predicate, complex_term_decl};
+	enum Type {atom, variable, number, complex_term_decl};
 
 	Type t;
 

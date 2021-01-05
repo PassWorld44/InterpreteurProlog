@@ -19,9 +19,6 @@ std::ostream& operator<<(std::ostream& output, const Thing& th)
 	case Thing::Type::number:
 		output << *static_cast<const Number*>(&th);
 		break;
-	case Thing::Type::predicate:
-		output << *static_cast<const predicate*>(&th);
-		break;
 	case Thing::Type::complex_term_decl:
 		output << *static_cast<const complex_term_decl*>(&th);
 		break;
