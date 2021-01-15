@@ -13,6 +13,7 @@
 #include "thing/complextherm.h"
 #include "predicate.h"
 #include "listpredicate.h"
+#include "trim.h"
 
 void read(std::string::iterator startS, std::string::iterator endS, listPredicate& listDecl)
 {
@@ -55,7 +56,7 @@ void read(std::string::iterator startS, std::string::iterator endS, listPredicat
 			//---------- Read the parameters of the predicate --------
 			std::pair<listThing::iterator, bool> pair2 = pred.emplace(std::make_unique<complex_term_decl>());
 
-			complex_term_decl& listArgs = *static_cast<complex_term_decl*>((*pair2.first).get());
+			complex_term_decl& listArgs = *(*pair2.first);
 
 			it = endAtom;
 
@@ -92,18 +93,48 @@ void read(std::string::iterator startS, std::string::iterator endS, listPredicat
 
 void analysInput(std::string txt, const listPredicate& listPred)
 {
-    listPredicate askPred;
+    listPredicate askList;
 
-	read(txt.begin(), txt.end(), askPred);
+	read(txt.begin(), txt.end(), askList);
 	//we just have to compare the results now
 
-	for(std::pair<const std::string, predicate>& i : askPred)
+	if(askList.size() != 1)
 	{
-		std::find_if(listPred.begin(), listPred.end(), 
-			[&](const std::pair<const std::string, const predicate&> pair) -> bool
+		throw std::runtime_error("bad input provided (and not a safe implementation also)");
+	}
+
+	predicate& askPred { askList.begin()->second }; //we only have one element
+
+	auto a = std::find_if(listPred.begin(), listPred.end(), 
+		[&](const std::pair<const std::string, const predicate&> pair) -> bool
+	{
+		std::cout << pair.second.getFullName() << " " << askPred.getFullName() << std::endl;
+		return pair.second.getFullName() == askPred.getFullName();
+	});
+
+	complex_term_decl& compl = *askPred.begin();
+
+	if(a != listPred.end()) //there are a predicate with the same name and arity
+	{
+		const predicate& corrPred { (*a).second };
+
+		auto it = std::find_if(corrPred.begin(), corrPred.end(), 
+			[&](const std::unique_ptr<complex_term_decl>& ptr) -> bool {
+			return compl== *ptr;
+		});	
+
+		if(compl == **it) //perfecly equal, variables aren't needed
 		{
-			return pair.second.getFullName() == i.second.getFullName();
-		});
+			std::cout << "yes" << std::endl;
+		}
+		else
+		{
+			std::cout << "not implemented yet" << std::endl;
+		}
+	}
+	else
+	{
+		std::cout << "no" << std::endl;
 	}
 }
 
@@ -128,9 +159,9 @@ int main()
 	std::string lastInput;
 	std::string totalinput;
 
-	bool continue {true};
+	bool is_continuing {true};
 
-	while(continue && totalinput != "quit")
+	while(is_continuing && totalinput != "quit")
 	{
 		bool findPoint {false};
 		lastInput.clear();
@@ -143,6 +174,7 @@ int main()
 			lastInput.clear();
 
 			std::getline(std::cin, lastInput);
+			lastInput = trim(lastInput);
 			totalinput.append(lastInput);
 
 			if(std::find(lastInput.begin(), lastInput.end(), '.') != lastInput.end())
@@ -152,7 +184,7 @@ int main()
 
 			if(lastInput == "quit")
 			{
-				continue = true;
+				is_continuing = false;
 				break;
 			}
 
@@ -160,8 +192,10 @@ int main()
 			//std::cout << totalinput << std::endl;
 		}
 
-		if(continue) //otherwise just quit and don't analyse le last thing entered
+		if(is_continuing) //otherwise just quit and don't analyse le last thing entered
+		{
 			analysInput(totalinput, listDeclarations);
+		}
 
 		std::cin.clear();
 	}

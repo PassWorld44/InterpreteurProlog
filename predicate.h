@@ -14,10 +14,14 @@
 struct predicate;
 
 template <>
-struct std::equal_to<std::unique_ptr<complex_term_decl>> {
-  using Type = std::unique_ptr<complex_term_decl>;
+struct std::equal_to<std::unique_ptr<complex_term_decl>> 
+{
+	using Type = std::unique_ptr<complex_term_decl>;
 
-  bool operator()(const Type& thing1, const Type& thing2) const noexcept;
+  	bool operator()(const Type& thing1, const Type& thing2) const noexcept
+	{
+		return *thing1 == *thing2;
+	}
 };
 
 using listThing = std::unordered_set<std::unique_ptr<complex_term_decl>>;

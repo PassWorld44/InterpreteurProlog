@@ -1,13 +1,5 @@
 #include "predicate.h"
 
-template<>
-bool std::equal_to<std::unique_ptr<complex_term_decl>>::operator()
-	(const  std::unique_ptr<complex_term_decl>& lhs, const  std::unique_ptr<complex_term_decl>& rhs) const noexcept
-{
-	return *lhs == *rhs;
-}
-
-
 std::ostream& operator<<(std::ostream& output, const listThing& ls)
 {
 	//std::cout << ls.size() << std::endl;
