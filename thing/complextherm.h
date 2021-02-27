@@ -17,11 +17,15 @@
 
 #include "../trash.h"
 
+
+//template <>
 class complex_term_decl : public Thing, public std::vector<std::unique_ptr<Thing>>
 {
 public:
 	complex_term_decl() : Thing{Type::complex_term_decl}
 	{}
+
+	complex_term_decl(const complex_term_decl&) =  delete;
 };
 
 std::ostream& operator<<(std::ostream& out, const complex_term_decl& co);

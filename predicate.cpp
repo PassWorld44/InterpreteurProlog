@@ -11,7 +11,7 @@ std::ostream& operator<<(std::ostream& output, const listThing& ls)
 	return output;
 }
 
-predicate::predicate(std::string str_, int arity_) : arity{arity_}, str{str_}
+predicate::predicate(std::string str_, int arity_) : 
 {}
 
 predicate::predicate(std::pair<std::string, int> data) : arity{data.second}, str{data.first}

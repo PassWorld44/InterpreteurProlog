@@ -11,7 +11,7 @@
 #include "thing/number.h"
 #include "thing/variable.h"
 
-struct predicate;
+//struct predicate;
 
 template <>
 struct std::equal_to<std::unique_ptr<complex_term_decl>> 
@@ -28,17 +28,21 @@ using listThing = std::unordered_set<std::unique_ptr<complex_term_decl>>;
 
 std::ostream& operator<<(std::ostream& output, const listThing& ls);
 
-struct predicate : public listThing
+struct predicate : public std::unique_ptr<listThing>
 {
 	predicate(std::string str_, int arity_);
 	predicate(std::pair<std::string, int> data);
 
 	predicate(predicate&) = delete;
 	//we have a unique_ptr for a reason
+	predicate(predicate&&) = default;
 
+	predicate& operator=(predicate&) = delete;
 	bool operator==(const predicate& other) const;
 	//we have only one term existing having the same name and arity
 
+	operator predicate&() {return *this;}
+	
 	std::string getName() const;
 	std::string getFullName() const;
 

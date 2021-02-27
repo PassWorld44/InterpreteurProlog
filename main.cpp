@@ -18,10 +18,11 @@
 void read(std::string::iterator startS, std::string::iterator endS, listPredicate& listDecl)
 {
 	for(auto it = startS; it != endS; it++)
+	//itere sur le programme entre en string
 	{
 		if(!isalpha(*it) && *it != '_')
 		{
-			std::cout << *(it - 1) << " " << *it << " " << *(it + 1) << std::endl; 
+			//std::cout << *(it - 1) << " " << *it << " " << *(it + 1) << std::endl; 
 			throw std::runtime_error("not a predicate");
 		}
 
@@ -42,19 +43,19 @@ void read(std::string::iterator startS, std::string::iterator endS, listPredicat
 		std::stringstream ss;
 		ss << name << "/" << arity;
 
-		std::pair<listPredicate::iterator, bool> pair = listDecl.try_emplace(ss.str(),name, arity);
-		//create or find the corresponding complex_term
+		auto pair = listDecl.try_emplace(ss.str(), name, arity);
+		//create or find the corresponding predicate
 
 		//std::cout << "caca:" <<pair.second << " " << listDecl.size()<<std::endl;
 		//std::cout << listDecl << std::endl;
 		//std::cin.get();
 
-		predicate& pred = *static_cast<predicate*>(&(*pair.first).second);
+		predicate& pred = *static_cast<predicate*>(&*(*pair.first).second);
 
 		if(arity != 0)
 		{
 			//---------- Read the parameters of the predicate --------
-			std::pair<listThing::iterator, bool> pair2 = pred.emplace(std::make_unique<complex_term_decl>());
+			std::pair<listThing::iterator, bool> pair2 = pred->emplace(std::make_unique<complex_term_decl>());
 
 			complex_term_decl& listArgs = *(*pair2.first);
 
@@ -103,24 +104,24 @@ void analysInput(std::string txt, const listPredicate& listPred)
 		throw std::runtime_error("bad input provided (and not a safe implementation also)");
 	}
 
-	predicate& askPred { askList.begin()->second }; //we only have one element
+	predicate& askPred { *askList.begin()->second }; //we only have one element
 
 	auto a = std::find_if(listPred.begin(), listPred.end(), 
-		[&](const std::pair<const std::string, const predicate&> pair) -> bool
+		[&](const std::pair<const std::string, const std::unique_ptr<predicate>&> pair) -> bool
 	{
-		std::cout << pair.second.getFullName() << " " << askPred.getFullName() << std::endl;
-		return pair.second.getFullName() == askPred.getFullName();
+		std::cout << pair.second->getFullName() << " " << askPred.getFullName() << std::endl;
+		return pair.second->getFullName() == askPred.getFullName();
 	});
 
-	complex_term_decl& compl = *askPred.begin();
+	complex_term_decl& compl = *(*askPred->begin());
 
 	if(a != listPred.end()) //there are a predicate with the same name and arity
 	{
-		const predicate& corrPred { (*a).second };
+		const predicate& corrPred { *(*a).second };
 
-		auto it = std::find_if(corrPred.begin(), corrPred.end(), 
+		auto it = std::find_if(corrPred->begin(), corrPred->end(), 
 			[&](const std::unique_ptr<complex_term_decl>& ptr) -> bool {
-			return compl== *ptr;
+			return compl == *ptr;
 		});	
 
 		if(compl == **it) //perfecly equal, variables aren't needed
@@ -141,11 +142,10 @@ void analysInput(std::string txt, const listPredicate& listPred)
 int main() 
 {
 	listPredicate listDeclarations;
+	//where everithing is stored
 
 	std::ifstream file{"prog.txt", std::ifstream::in};
-
 	std::string fileTxt;
-
 	std::string line;
 	while(file >> line)
 	{
@@ -160,7 +160,6 @@ int main()
 	std::string totalinput;
 
 	bool is_continuing {true};
-
 	while(is_continuing && totalinput != "quit")
 	{
 		bool findPoint {false};
